@@ -1,0 +1,58 @@
+[gd_resource type="Animation" format=2]
+
+[resource]
+
+resource_name = "anim"
+length = 4.0
+loop = false
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/keys = {
+"times": PoolFloatArray( 0, 0.4, 0.6, 0.8, 1.1, 1.3, 1.5, 1.8, 1.9, 2, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 3 ),
+"transitions": PoolFloatArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 8, 8, 8, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 8, 8, 8, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 8, 8, 8, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 8, 8, 8, 1 ), Color( 1, 1, 1, 1 ), Color( 8, 8, 8, 1 ), Color( 1, 1, 1, 1 ), Color( 8, 8, 8, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/keys = {
+"times": PoolFloatArray( 2.8, 3.4 ),
+"transitions": PoolFloatArray( 1, 1 ),
+"values": [ {
+"args": [  ],
+"method": "explode"
+}, {
+"args": [  ],
+"method": "done"
+} ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("explosion1:config/emitting")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/keys = {
+"times": PoolFloatArray( 2.8 ),
+"transitions": PoolFloatArray( 1 ),
+"update": 2,
+"values": [ true ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("explosion2:config/emitting")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/keys = {
+"times": PoolFloatArray( 2.8 ),
+"transitions": PoolFloatArray( 1 ),
+"update": 2,
+"values": [ true ]
+}
+
