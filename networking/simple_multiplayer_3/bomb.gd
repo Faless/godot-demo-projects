@@ -5,7 +5,7 @@ var owner
 
 # Called from the animation
 func explode():
-	if (get_network_remote() != get_tree().get_network_unique_id()):
+	if (get_tree().get_network_unique_id() != 1):
 		# But will call explosion only on master
 		return
 	for p in in_area:
