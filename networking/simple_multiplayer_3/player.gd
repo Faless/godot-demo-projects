@@ -2,6 +2,8 @@ extends KinematicBody2D
 
 const MOTION_SPEED = 90.0
 
+signal ready_to_start(id)
+
 slave var slave_pos = Vector2()
 slave var slave_motion = Vector2()
 
@@ -23,7 +25,7 @@ var bomb_index = 0
 func _fixed_process(delta):
 	var motion = Vector2()
 
-	if (is_network_master()):
+	if (get_network_remote() == get_tree().get_network_unique_id()):
 		if (Input.is_action_pressed("move_left")):
 			motion += Vector2(-1, 0)
 		if (Input.is_action_pressed("move_right")):
@@ -75,9 +77,9 @@ func _fixed_process(delta):
 
 	if (is_colliding()):
 		# Slide through walls
-		move(get_collision_normal().slide(remainder))
+		move(get_collision_normal().slide(remainder.normalized()))
 
-	if (not is_network_master()):
+	if (get_network_remote() != get_tree().get_network_unique_id()):
 		slave_pos = get_position() # To avoid jitter
 
 slave func stun():
@@ -91,6 +93,9 @@ master func exploded(by_who):
 
 func set_player_name(name):
 	get_node("label").set_text(name)
+
+func ready_to_start(id):
+    emit_signal("ready_to_start", id)
 
 func _ready():
 	stunned = false

@@ -21,9 +21,11 @@ signal game_error(what)
 
 # Callback from SceneTree
 func _player_connected(id):
-	# This is not used in this demo, because _connected_ok is called for clients
-	# on success and will do the job.
-	pass
+	var c = load("res://client.tscn").instance()
+	c.set_network_remote(id)
+	c.connect("register_player", self, "register_player", [], CONNECT_ONESHOT)
+	c.set_name(str(id))
+	add_child(c)
 
 # Callback from SceneTree
 func _player_disconnected(id):
@@ -40,8 +42,12 @@ func _player_disconnected(id):
 
 # Callback from SceneTree, only for clients (not server)
 func _connected_ok():
+	var c = load("res://client.tscn").instance()
+	c.set_name(str(get_tree().get_network_unique_id()))
+	add_child(c)
+	c.set_network_remote(get_tree().get_network_unique_id())
 	# Registration of a client beings here, tell everyone that we are here
-	rpc("register_player", get_tree().get_network_unique_id(), player_name)
+	c.rpc("register_player", player_name)
 	emit_signal("connection_succeeded")
 
 # Callback from SceneTree, only for clients (not server)
@@ -78,22 +84,26 @@ remote func pre_start_game(spawn_points):
 
 	get_tree().get_root().get_node("lobby").hide()
 
+	var me = null
 	var player_scene = load("res://player.tscn")
 
 	for p_id in spawn_points:
 		var spawn_pos = world.get_node("spawn_points/" + str(spawn_points[p_id])).get_position()
 		var player = player_scene.instance()
+		player.connect("ready_to_start", self, "ready_to_start")
 
 		player.set_name(str(p_id)) # Use unique ID as node name
 		player.set_position(spawn_pos)
 
+		player.set_network_remote(p_id)
 		if (p_id == get_tree().get_network_unique_id()):
+			me = player
 			# If node for this peer id, set master
-			player.set_network_mode(NETWORK_MODE_MASTER)
+			#player.set_network_mode(NETWORK_MODE_MASTER)
 			player.set_player_name(player_name)
 		else:
 			# Otherwise set slave
-			player.set_network_mode(NETWORK_MODE_SLAVE)
+			#player.set_network_mode(NETWORK_MODE_SLAVE)
 			player.set_player_name(players[p_id])
 
 		world.get_node("players").add_child(player)
@@ -105,7 +115,7 @@ remote func pre_start_game(spawn_points):
 
 	if (not get_tree().is_network_server()):
 		# Tell server we are ready to start
-		rpc_id(1, "ready_to_start", get_tree().get_network_unique_id())
+		me.rpc_id(1, "ready_to_start", get_tree().get_network_unique_id())
 	elif players.size() == 0:
 		post_start_game()
 
