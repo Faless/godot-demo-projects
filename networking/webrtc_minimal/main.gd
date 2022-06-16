@@ -9,7 +9,7 @@ func _ready():
 	add_child(p2)
 
 	# Wait a second and send message from P1
-	await get_tree().create_timer(1).timeout
+	await get_tree().create_timer(2).timeout
 	p1.send_message("Hi from %s" % String(p1.get_path()))
 
 	# Wait a second and send message from P2
