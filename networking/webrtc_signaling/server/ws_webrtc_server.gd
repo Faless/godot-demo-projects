@@ -4,7 +4,7 @@ const TIMEOUT = 1000 # Unresponsive clients times out after 1 sec
 const SEAL_TIME = 10000 # A sealed room will be closed after this time
 const ALFNUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
-var _alfnum = ALFNUM.to_ascii()
+var _alfnum = ALFNUM.to_ascii_buffer()
 
 var rand: RandomNumberGenerator = RandomNumberGenerator.new()
 var lobbies: Dictionary = {}
@@ -14,7 +14,7 @@ var peers: Dictionary = {}
 class Peer extends RefCounted:
 	var id = -1
 	var lobby = ""
-	var time = OS.get_ticks_msec()
+	var time = Time.get_ticks_msec()
 
 	func _init(peer_id):
 		id = peer_id
@@ -69,8 +69,8 @@ class Lobby extends RefCounted:
 		if host != peer_id: return false
 		sealed = true
 		for p in peers:
-			server.get_peer(p).put_packet("S: \n".to_utf8())
-		time = OS.get_ticks_msec()
+			server.get_peer(p).put_packet("S: \n".to_utf8_buffer())
+		time = Time.get_ticks_msec()
 		return true
 
 
@@ -87,7 +87,7 @@ func _process(delta):
 
 func listen(port):
 	stop()
-	rand.seed = OS.get_unix_time()
+	rand.seed = Time.get_unix_time_from_system()
 	server.listen(port)
 
 
@@ -104,19 +104,19 @@ func poll():
 
 	# Peers timeout.
 	for p in peers.values():
-		if p.lobby == "" and OS.get_ticks_msec() - p.time > TIMEOUT:
+		if p.lobby == "" and Time.get_ticks_msec() - p.time > TIMEOUT:
 			server.disconnect_peer(p.id)
 	# Lobby seal.
 	for k in lobbies:
 		if not lobbies[k].sealed:
 			continue
-		if lobbies[k].time + SEAL_TIME < OS.get_ticks_msec():
+		if lobbies[k].time + SEAL_TIME < Time.get_ticks_msec():
 			# Close lobby.
 			for p in lobbies[k].peers:
 				server.disconnect_peer(p)
 
 
-func _peer_connected(id, protocol = ""):
+func _peer_connected(id, protocol="", resource_name=""):
 	peers[id] = Peer.new(id)
 
 
@@ -185,8 +185,8 @@ func _parse_msg(id) -> bool:
 	if not dest_str.is_valid_int(): # Destination id is not an integer
 		return false
 
-	var dest_id: int = int(dest_str)
-	if dest_id == NetworkedMultiplayerPeer.TARGET_PEER_SERVER:
+	var dest_id := dest_str.to_int()
+	if dest_id == MultiplayerPeer.TARGET_PEER_SERVER:
 		dest_id = lobby.host
 
 	if not peers.has(dest_id): # Destination ID not connected
@@ -196,15 +196,15 @@ func _parse_msg(id) -> bool:
 		return false
 
 	if id == lobby.host:
-		id = NetworkedMultiplayerPeer.TARGET_PEER_SERVER
+		id = MultiplayerPeer.TARGET_PEER_SERVER
 
 	if type.begins_with("O: "):
 		# Client is making an offer
-		server.get_peer(dest_id).put_packet(("O: %d\n%s" % [id, req[1]]).to_utf8())
+		server.get_peer(dest_id).put_packet(("O: %d\n%s" % [id, req[1]]).to_utf8_buffer())
 	elif type.begins_with("A: "):
 		# Client is making an answer
-		server.get_peer(dest_id).put_packet(("A: %d\n%s" % [id, req[1]]).to_utf8())
+		server.get_peer(dest_id).put_packet(("A: %d\n%s" % [id, req[1]]).to_utf8_buffer())
 	elif type.begins_with("C: "):
 		# Client is making an answer
-		server.get_peer(dest_id).put_packet(("C: %d\n%s" % [id, req[1]]).to_utf8())
+		server.get_peer(dest_id).put_packet(("C: %d\n%s" % [id, req[1]]).to_utf8_buffer())
 	return true

@@ -1,20 +1,20 @@
 extends "ws_webrtc_client.gd"
 
-var rtc_mp: WebRTCMultiplayer = WebRTCMultiplayer.new()
+var rtc_mp: WebRTCMultiplayerPeer = WebRTCMultiplayerPeer.new()
 var sealed = false
 
 func _init():
-	connect(&"connected", self.connected)
-	connect(&"disconnected", self.disconnected)
+	connect(&"connected", self._connected)
+	connect(&"disconnected", self._disconnected)
 
-	connect(&"offer_received", self.offer_received)
-	connect(&"answer_received", self.answer_received)
-	connect(&"candidate_received", self.candidate_received)
+	connect(&"offer_received", self._offer_received)
+	connect(&"answer_received", self._answer_received)
+	connect(&"candidate_received", self._candidate_received)
 
-	connect(&"lobby_joined", self.lobby_joined)
-	connect(&"lobby_sealed", self.lobby_sealed)
-	connect(&"peer_connected", self.peer_connected)
-	connect(&"peer_disconnected", self.peer_disconnected)
+	connect(&"lobby_joined", self._lobby_joined)
+	connect(&"lobby_sealed", self._lobby_sealed)
+	connect(&"peer_connected", self._peer_connected)
+	connect(&"peer_disconnected", self._peer_disconnected)
 
 
 func start(url, lobby = ""):
@@ -55,46 +55,46 @@ func _offer_created(type, data, id):
 	else: send_answer(id, data)
 
 
-func connected(id):
+func _connected(id):
 	print("Connected %d" % id)
 	rtc_mp.initialize(id, true)
 
 
-func lobby_joined(lobby):
+func _lobby_joined(lobby):
 	self.lobby = lobby
 
 
-func lobby_sealed():
+func _lobby_sealed():
 	sealed = true
 
 
-func disconnected():
+func _disconnected():
 	print("Disconnected: %d: %s" % [code, reason])
 	if not sealed:
 		stop() # Unexpected disconnect
 
 
-func peer_connected(id):
+func _peer_connected(id):
 	print("Peer connected %d" % id)
 	_create_peer(id)
 
 
-func peer_disconnected(id):
+func _peer_disconnected(id):
 	if rtc_mp.has_peer(id): rtc_mp.remove_peer(id)
 
 
-func offer_received(id, offer):
+func _offer_received(id, offer):
 	print("Got offer: %d" % id)
 	if rtc_mp.has_peer(id):
 		rtc_mp.get_peer(id).connection.set_remote_description("offer", offer)
 
 
-func answer_received(id, answer):
+func _answer_received(id, answer):
 	print("Got answer: %d" % id)
 	if rtc_mp.has_peer(id):
 		rtc_mp.get_peer(id).connection.set_remote_description("answer", answer)
 
 
-func candidate_received(id, mid, index, sdp):
+func _candidate_received(id, mid, index, sdp):
 	if rtc_mp.has_peer(id):
 		rtc_mp.get_peer(id).connection.add_ice_candidate(mid, index, sdp)

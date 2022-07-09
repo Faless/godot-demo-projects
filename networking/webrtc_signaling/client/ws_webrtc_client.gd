@@ -19,7 +19,7 @@ signal lobby_sealed()
 
 func _init():
 	client.connect(&"data_received", self._parse_msg)
-	client.connect(&"connection_established", self._connected)
+	client.connect(&"connection_established", self._ws_connected)
 	client.connect(&"connection_closed", self._closed)
 	client.connect(&"connection_error", self._closed)
 	client.connect(&"server_close_request", self._close_request)
@@ -45,7 +45,7 @@ func _close_request(code, reason):
 	self.reason = reason
 
 
-func _connected(protocol = ""):
+func _ws_connected(protocol = ""):
 	client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
 	if autojoin:
 		join_lobby(lobby)
@@ -73,7 +73,7 @@ func _parse_msg():
 	if not src_str.is_valid_int(): # Source id is not an integer
 		return
 
-	var src_id: int = int(src_str)
+	var src_id := src_str.to_int()
 
 	if type.begins_with("I: "):
 		emit_signal("connected", src_id)
@@ -96,15 +96,15 @@ func _parse_msg():
 			return
 		if not candidate[1].is_valid_int():
 			return
-		emit_signal("candidate_received", src_id, candidate[0], int(candidate[1]), candidate[2])
+		emit_signal("candidate_received", src_id, candidate[0], candidate[1].to_int(), candidate[2])
 
 
 func join_lobby(lobby):
-	return client.get_peer(1).put_packet(("J: %s\n" % lobby).to_utf8())
+	return client.get_peer(1).put_packet(("J: %s\n" % lobby).to_utf8_buffer())
 
 
 func seal_lobby():
-	return client.get_peer(1).put_packet("S: \n".to_utf8())
+	return client.get_peer(1).put_packet("S: \n".to_utf8_buffer())
 
 
 func send_candidate(id, mid, index, sdp) -> int:
@@ -120,7 +120,7 @@ func send_answer(id, answer) -> int:
 
 
 func _send_msg(type, id, data) -> int:
-	return client.get_peer(1).put_packet(("%s: %d\n%s" % [type, id, data]).to_utf8())
+	return client.get_peer(1).put_packet(("%s: %d\n%s" % [type, id, data]).to_utf8_buffer())
 
 
 func _process(delta):

@@ -57,7 +57,7 @@ func _log(msg):
 
 
 func ping():
-	_log(client.rtc_mp.put_packet("ping".to_utf8()))
+	_log(client.rtc_mp.put_packet("ping".to_utf8_buffer()))
 
 
 func _on_Peers_pressed():
